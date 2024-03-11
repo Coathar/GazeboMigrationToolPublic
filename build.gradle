@@ -1,0 +1,59 @@
+buildscript {
+    ext {
+        queryDslVersion = '5.0.0'
+        lombokVersion = '1.18.24'
+    }
+}
+
+plugins {
+    id 'java'
+}
+
+group 'com.coathar'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation "com.google.guava:guava:31.1-jre"
+
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    implementation("org.projectlombok:lombok:${lombokVersion}")
+    implementation("com.opencsv:opencsv:5.5")
+    implementation(files('jars/GazeboDBLib-all-1.0-SNAPSHOT.jar'))
+
+    // Temporary for data migration
+    implementation("mysql:mysql-connector-java:5.1.34")
+
+    /* TEST */
+    // Querydsl
+    testCompileClasspath "com.querydsl:querydsl-sql:${queryDslVersion}"
+    testAnnotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:general")
+
+    // Lombok
+    testImplementation("org.projectlombok:lombok:${lombokVersion}")
+    testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+    testCompileOnly("org.projectlombok:lombok:${lombokVersion}")
+
+}
+
+task fatJar(type: Jar)
+{
+    manifest {
+        attributes  'Implementation-Title': 'GazeboMigrationTool',
+                'Implementation-Version': version,
+                'Main-Class': 'com.coathar.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+test {
+    useJUnitPlatform()
+}
